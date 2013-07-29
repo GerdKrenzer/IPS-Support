@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<daten>
+	<erzeugt>1332846793</erzeugt>
+	<baustellen>
+		<baustelle>
+			<internet>ja</internet>
+			<titel><![CDATA[Baustelle 1]]></titel>
+			<stadtteil><![CDATA[Überseestadt]]></stadtteil>
+			<beschreibung><![CDATA[Beschreibung 1]]></beschreibung>
+			<beginn>01.01.2011</beginn>
+			<ende>01.01.2012</ende>
+		</baustelle>
+		<baustelle>
+			<internet>nein</internet>
+			<titel><![CDATA[Baustelle 2]]></titel>
+			<stadtteil><![CDATA[Findorff]]></stadtteil>
+			<beschreibung><![CDATA[Beschreibung 2]]></beschreibung>
+			<beginn>01.01.2012</beginn>
+			<ende>01.01.2013</ende>
+		</baustelle>
+	</baustellen>
+</daten>

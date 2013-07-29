@@ -1,0 +1,12 @@
+grau-schwarz für Outline-Ampel: 117,117,117
+
+
+RIS-rot:       228,2,100
+KOS-blau:      4,166,212
+MAB-lila:      140,2,124
+TRM-orange:    236,154,4
+RES-grün:      4,114,60
+
+STATUS-blau:   36,86,164
+ONEPAGE-oliv:  164,158,4
+

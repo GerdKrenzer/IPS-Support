@@ -1,0 +1,112 @@
+X-Account-Key: account2
+X-UIDL: 0M6Uep-1SS4hl2mHD-00y3i9
+X-Mozilla-Status: 0003
+X-Mozilla-Status2: 10000000
+X-Mozilla-Keys:                                                                                 
+Return-Path: <db@dasduell.com>
+Delivery-Date: Tue, 27 Mar 2012 12:21:38 +0200
+Received: from mail2.farm.de (mail2.farm.de [212.202.255.165])
+	by mx.kundenserver.de (node=mxbap2) with ESMTP (Nemesis)
+	id 0MG8gx-1S0fPp1dVX-00EzVh for Gerd.Krenzer@GKrenzer.de; Tue, 27 Mar 2012 12:21:38 +0200
+Received: from localhost (localhost [127.0.0.1])
+	by mail2.farm.de (Postfix) with ESMTP id EC6E03D64FF;
+	Tue, 27 Mar 2012 12:21:37 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at mail2.farm.de
+Received: from mail2.farm.de ([127.0.0.1])
+	by localhost (mail2.farm.de [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id a6BUSSaPCcyz; Tue, 27 Mar 2012 12:21:37 +0200 (CEST)
+Received: from [192.168.178.47] (p5B3165FA.dip.t-dialin.net [91.49.101.250])
+	by mail2.farm.de (Postfix) with ESMTP id 6E4473D64FE;
+	Tue, 27 Mar 2012 12:21:37 +0200 (CEST)
+Message-ID: <4F7194B0.4000904@dasduell.com>
+Date: Tue, 27 Mar 2012 12:21:36 +0200
+From: David Bartusch <db@dasduell.com>
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:11.0) Gecko/20120313 Thunderbird/11.0
+MIME-Version: 1.0
+To: Gerd.Krenzer@GKrenzer.de, grenz@hanseWasser.de
+Subject: hanseWasser Baustellen im Internet
+References: <4F71861B.70401@abraxas-medien.de>
+In-Reply-To: <4F71861B.70401@abraxas-medien.de>
+X-Forwarded-Message-Id: <4F71861B.70401@abraxas-medien.de>
+Content-Type: multipart/mixed;
+ boundary="------------030907090203040108070506"
+X-UI-Loop: V01:YUiXUtvv3Zo=:SXrJEUzGgN7PDEkpU9d4cPyLlRDf3bvWb/uUAAm4kiQ=
+X-UI-Junk: AutoMaybeJunk -96 (BAY);
+  V01:3KPA3zDv:vQbOLaKLmdA5b4pwLQCS3cNNhtvprVaDPmzMIzG6bralf1932hX
+  dpbP58W1zius6/unh2dt3Q9aQBR3JF4gxjZeTvpd7ubzP+OlvLN+en0YiUwZCO4j
+  L09jBokg2pk0yeZP0dBGfVLv1HBU9D6+mopR3tOuETSOik93QYgAML1K3lte7drV
+  KuCvO/uT0C0MNwCD/d2FgNjlOzy8geFrX7FSvJnf8Bk/4XNmiTdCDZIz7aEaAo9x
+  TofJrzjlSOzOjrX6Zp/UZbCLSa98dLiXgBA==
+Envelope-To: Gerd.Krenzer@GKrenzer.de
+
+This is a multi-part message in MIME format.
+--------------030907090203040108070506
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+
+
+
+Guten Tag Gerd Krenzer,
+
+ich sende Ihnen eine beispielhafte XML-Datei für das hanseWasser-Projekt 
+"Baustellen im Internet".
+
+Sie ist noch nicht "final", sollte aber für eine Angebotserstellung als 
+Grundlage dienen, da sich vermutlich nicht mehr viel andert.
+
+  Kurze Erklärung dazu:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<daten>
+<erzeugt>1332846793</erzeugt>  <-- das muss nicht unbedingt sein, ist
+aber immer ganz praktisch. Der Wert ist ein Zeitstempel (Sekunden seit
+1.1.1970)
+<baustellen>
+<baustelle>  <-- Beispiel-Baustelle 1
+<internet>ja</internet>
+<titel><![CDATA[Baustelle 1]]></titel>  <-- CDATA wegen eventueller
+XML-Steuerzeichen im Text
+<stadtteil><![CDATA[Überseestadt]]></stadtteil>
+<beschreibung><![CDATA[Beschreibung 1]]></beschreibung>  <-- Falls nicht
+vorhanden, dann leer
+<beginn>01.01.2011</beginn>  <-- Datum kann in diesem Format sein, es
+ginge auch hier ein Zeitstempel. Falls kein Datum vorhanden, dann leer
+<ende>01.01.2012</ende>  <-- s.o.
+</baustelle>
+<baustelle>  <-- Beispiel-Baustelle 2
+<internet>nein</internet>
+<titel><![CDATA[Baustelle 2]]></titel>
+<stadtteil><![CDATA[Findorff]]></stadtteil>
+<beschreibung><![CDATA[Beschreibung 2]]></beschreibung>
+<beginn>01.01.2012</beginn>
+<ende>01.01.2013</ende>
+</baustelle>
+          ...<-- Baustelle 3, 4, 5, ...
+</baustellen>
+</daten>
+
+
+
+
+--------------030907090203040108070506
+Content-Type: text/xml;
+ name="austauschformat.xml"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="austauschformat.xml"
+
+77u/PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxkYXRlbj4NCgk8
+ZXJ6ZXVndD4xMzMyODQ2NzkzPC9lcnpldWd0Pg0KCTxiYXVzdGVsbGVuPg0KCQk8YmF1c3Rl
+bGxlPg0KCQkJPGludGVybmV0PmphPC9pbnRlcm5ldD4NCgkJCTx0aXRlbD48IVtDREFUQVtC
+YXVzdGVsbGUgMV1dPjwvdGl0ZWw+DQoJCQk8c3RhZHR0ZWlsPjwhW0NEQVRBW8OcYmVyc2Vl
+c3RhZHRdXT48L3N0YWR0dGVpbD4NCgkJCTxiZXNjaHJlaWJ1bmc+PCFbQ0RBVEFbQmVzY2hy
+ZWlidW5nIDFdXT48L2Jlc2NocmVpYnVuZz4NCgkJCTxiZWdpbm4+MDEuMDEuMjAxMTwvYmVn
+aW5uPg0KCQkJPGVuZGU+MDEuMDEuMjAxMjwvZW5kZT4NCgkJPC9iYXVzdGVsbGU+DQoJCTxi
+YXVzdGVsbGU+DQoJCQk8aW50ZXJuZXQ+bmVpbjwvaW50ZXJuZXQ+DQoJCQk8dGl0ZWw+PCFb
+Q0RBVEFbQmF1c3RlbGxlIDJdXT48L3RpdGVsPg0KCQkJPHN0YWR0dGVpbD48IVtDREFUQVtG
+aW5kb3JmZl1dPjwvc3RhZHR0ZWlsPg0KCQkJPGJlc2NocmVpYnVuZz48IVtDREFUQVtCZXNj
+aHJlaWJ1bmcgMl1dPjwvYmVzY2hyZWlidW5nPg0KCQkJPGJlZ2lubj4wMS4wMS4yMDEyPC9i
+ZWdpbm4+DQoJCQk8ZW5kZT4wMS4wMS4yMDEzPC9lbmRlPg0KCQk8L2JhdXN0ZWxsZT4NCgk8
+L2JhdXN0ZWxsZW4+DQo8L2RhdGVuPg==
+--------------030907090203040108070506--
+

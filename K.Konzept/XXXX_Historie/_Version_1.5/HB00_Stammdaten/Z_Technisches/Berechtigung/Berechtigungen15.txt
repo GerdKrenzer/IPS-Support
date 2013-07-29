@@ -1,0 +1,20 @@
+AUR_AENDERN	Projektlaufzettel bearbeiten
+AUR_KONFIG	Projektlaufzettel konfigurieren
+AUR_ZUTEILEN	Erforderlich-Merker im Projektlaufzettel setzen
+GEW_AENDERN	GewÑhrleistungen Ñndern
+GEW_NEUUNDLOESCHEN	GewÑhrleistungen neu und lîschen
+KOS_BUDGET	Budget setzen und Ñndern
+PRJ_ABLAUF	Projektablauf hinzufÅgen, Ñndern und lîschen
+PRJ_BASIS	Projekt-Basisdaten (Status) Ñndern
+PRJ_BETEILIGTE	Externe Projektbeteiligte hinzufÅgen und Ñndern
+PRJ_KOPIEREN	Projekt kopieren
+PRJ_LISTE	Gesamtliste aus Vereinbarung und Ablauf ausdrucken
+PRJ_LOESCHEN	Projekt lîschen
+PRJ_MEMO	Memotext Ñndern
+PRJ_STAMM	Stammdaten Ñndern/ergÑnzen
+PRJ_STICHTAG	Stichtag éndern
+PRJ_VEREINBARUNG	Vereinbarung hinzufÅgen, Ñndern und lîschen
+RES_ISTSTUNDEN	Iststunden auf zugeordnete Projekte eintragen und ausdrucken
+RES_MITARB	Neuen Benutzer anlegen, Ñndern und lîschen
+RES_PRJZUORDNUNG	Mitarbeiter zu Projekt zuweisen, Ñndern und abtrennen
+RES_SOLLSTUNDEN	Sollstunde pro Projekt eingeben, Ñndern und lîschen

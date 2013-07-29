@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<daten>
+<erzeugt>1332846793</erzeugt>  <-- das muss nicht unbedingt sein, ist aber immer ganz praktisch. Der Wert ist ein Zeitstempel (Sekunden seit
+1.1.1970)
+<baustellen>
+<baustelle>  <-- Beispiel-Baustelle 1
+<internet>ja</internet>
+<titel><![CDATA[Baustelle 1]]></titel>  <-- CDATA wegen eventueller XML-Steuerzeichen im Text <stadtteil><![CDATA[Überseestadt]]></stadtteil>
+<beschreibung><![CDATA[Beschreibung 1]]></beschreibung>  <-- Falls nicht vorhanden, dann leer <beginn>01.01.2011</beginn>  <-- Datum kann in diesem Format sein, es ginge auch hier ein Zeitstempel. Falls kein Datum vorhanden, dann leer <ende>01.01.2012</ende>  <-- s.o.
+</baustelle>
+<baustelle>  <-- Beispiel-Baustelle 2
+<internet>nein</internet>
+<titel><![CDATA[Baustelle 2]]></titel>
+<stadtteil><![CDATA[Findorff]]></stadtteil>
+<beschreibung><![CDATA[Beschreibung 2]]></beschreibung> <beginn>01.01.2012</beginn> <ende>01.01.2013</ende> </baustelle>
+          ...<-- Baustelle 3, 4, 5, ...
+</baustellen>
+</daten>

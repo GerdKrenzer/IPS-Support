@@ -1,0 +1,643 @@
+*&---------------------------------------------------------------------*
+*& Report  ZCCO_EXP_IPS
+*&
+*&---------------------------------------------------------------------*
+*& (c) Ruchay, WVER
+*&
+*&  Version 1.0 vom 05.08.2008
+*&---------------------------------------------------------------------*
+
+REPORT zcco_exp_ips_hw.
+
+* Bericht zum Export der relevanten Daten zum IPS
+
+* Include für ODK-Konstanten
+INCLUDE fkadbcom.
+TYPE-POOLS truxs.
+
+* zur Aufbereitung csv
+FIELD-SYMBOLS  <it>   TYPE STANDARD TABLE.
+FIELD-SYMBOLS  <il>   TYPE ANY.
+
+* Konstante mit allen Standardtexten/variablen
+CONSTANTS: BEGIN OF c_standards,
+             pvalue  TYPE covp12-wkgbtr VALUE '1111.11',
+             nvalue  TYPE covp12-wkgbtr VALUE '1111.11-',
+             datum   TYPE covo1-budat VALUE '99991231',
+             text(8) TYPE c VALUE 'äöüßÄÖÜ#',
+           END OF c_standards.
+* OO Deklarationen
+DATA: zc_gui   TYPE REF TO cl_gui_frontend_services.
+
+* Tabellendefinition
+TABLES: aufk, covp11, covo1, cosp1, rpsco1.
+TABLES: eban.
+TABLES: coss1, covj11, covp12, bpja1.
+
+* Exporttabelle
+DATA:  BEGIN OF l_export,
+         tabname(30)   TYPE c,
+         filename      TYPE string,
+       END OF l_export.
+
+DATA:  t_export LIKE TABLE OF l_export.
+
+* Auftragstabelle
+DATA:  t_aufk    LIKE aufk OCCURS 500.
+DATA:  l_aufk    LIKE aufk.
+
+* Planwerte  Gesamtposition
+TYPES: BEGIN OF t_t_bpja1,
+         objnr   TYPE bp_objekt,
+         versn   TYPE versn,
+         wrttp   TYPE co_wrttp,
+         gjahr   TYPE gjahr,
+         vrgng   TYPE bp_vorgang,
+         wert    TYPE bp_wjt,
+       END OF t_t_bpja1.
+
+DATA:  l_bpja1  TYPE t_t_bpja1.
+DATA:  t_bpja1  TYPE t_t_bpja1 OCCURS 1500.
+
+* Planwerte  Einzelposten
+TYPES: BEGIN OF t_t_cosp1,
+         objnr   TYPE bp_objekt,
+         versn   TYPE versn,
+         wrttp   TYPE co_wrttp,
+         gjahr   TYPE gjahr,
+         vrgng   TYPE bp_vorgang,
+         kstar   TYPE kstar,
+         wert    TYPE bp_wjt,
+       END OF t_t_cosp1.
+
+DATA:  l_cosp1  TYPE t_t_cosp1.
+DATA:  t_cosp1  TYPE t_t_cosp1 OCCURS 1500.
+
+* Planwerte Verdichtung
+TYPES: BEGIN OF t_t_rpsco1,
+         objnr   TYPE bp_objekt,
+         versn   TYPE versn,
+         wrttp   TYPE co_wrttp,
+         gjahr   TYPE gjahr,
+         vorga   TYPE bp_vorgang,
+         wert    TYPE bp_wjt,
+       END OF t_t_rpsco1.
+
+DATA:  l_rpsco1  TYPE t_t_rpsco1.
+DATA:  t_rpsco1  TYPE t_t_rpsco1 OCCURS 1500.
+
+* Personen, die mit Projekt befasst sind
+TYPES: BEGIN OF t_t_pernr,
+         objnr      TYPE bp_objekt,
+         pernr      TYPE covp12-pernr,
+         name       TYPE bas_check_pernr-name,
+         perio      TYPE covp12-perio,
+         gjahr      TYPE covp12-gjahr,
+         wkgbtr     TYPE covp12-wkgbtr,  " KoKrsWhrg
+         mbgbtr     TYPE covp12-mbgbtr,
+       END OF t_t_pernr.
+
+DATA:  t_pernr TYPE t_t_pernr OCCURS 100.
+DATA:  l_pernr TYPE t_t_pernr.
+
+* Lieferanten und Gegegenkonten / beauftragte Firmen
+TYPES: BEGIN OF t_t_gkonto,
+         gkoar    TYPE covp11-gkoar,       " Gegenkontoart
+         gkont    TYPE covp11-gkont,       " Lieferant
+         gktxt    TYPE lfa1-name1,
+         sortl    TYPE lfa1-sortl,
+*  Addressinfos
+         pstlz    TYPE lfa1-pstlz,
+         ort01    TYPE lfa1-ort01,
+         stras    TYPE lfa1-stras,
+         telf1    TYPE lfa1-telf1,
+         telfx    TYPE lfa1-telfx,
+       END OF t_t_gkonto.
+
+DATA: t_gkonto TYPE t_t_gkonto OCCURS 100.
+DATA: l_gkonto TYPE t_t_gkonto.
+
+TYPES: BEGIN OF t_t_pgkonto,
+         aufnr    TYPE aufk-aufnr,
+         gkont    TYPE covp11-gkont,       " Lieferant
+         gktxt    TYPE lfa1-name1,
+         sortl    TYPE lfa1-sortl,
+* Addressinfos
+         pstlz    TYPE lfa1-pstlz,
+         ort01    TYPE lfa1-ort01,
+         stras    TYPE lfa1-stras,
+         telf1    TYPE lfa1-telf1,
+         telfx    TYPE lfa1-telfx,
+      END OF t_t_pgkonto.
+
+DATA: t_pgkonto TYPE t_t_pgkonto OCCURS 100.
+DATA: l_pgkonto TYPE t_t_pgkonto.
+
+* Buchungspostentabelle
+TYPES: BEGIN OF t_t_data,
+        aufnr     TYPE aufk-aufnr,
+        kstar     TYPE covp11-kstar,
+        gkoar     TYPE covp11-gkoar,
+        gkont     TYPE covp11-gkont,
+        gktxt     TYPE lfa1-name1,
+        ebeln     TYPE ekpo-ebeln,
+        ebelp     TYPE ekpo-ebelp,
+        coist     TYPE covp11-wkgbtr,
+        coobl     TYPE covp11-wkgbtr,
+        budat     TYPE covo1-budat,      " Buchungsdatum/Obligodatum
+        bldat     TYPE covo1-bldat,
+        sgtxt     TYPE covo1-sgtxt,
+        bltxt     TYPE covp11-bltxt,
+        xblnr     TYPE xblnr,
+        fisgt     TYPE bseg-sgtxt,
+        refbn     TYPE co_refbn,         " Referenz Blnr
+        refgj     TYPE co_refgj,         " Referenz Gjahr
+        awtyp     TYPE covp11-awtyp,     " Referenztyp
+        aworg     TYPE aworg,            " Referenzschlüssel
+* Extension für hanse Wasser Bremen
+        uspob     TYPE uspob,            " Kostenstelle / Leistungsart
+        parob     TYPE parob,            " Partnerobjekt
+        blart     TYPE co_refba,         " FI-Belegart
+       END OF t_t_data.
+
+DATA: t_data   TYPE t_t_data OCCURS 1000.
+DATA: l_data   TYPE t_t_data.
+
+* Hilfstabelle für Bestelltexte
+TYPES: BEGIN OF t_t_ekpo,
+        refbn     TYPE covo1-refbn,
+        rfpos     TYPE covo1-rfpos,
+        orgwtk    TYPE covo1-orgwtk,
+        sgtxt     TYPE covo1-sgtxt,
+        banfn     TYPE eban-banfn,
+        bnfpo     TYPE eban-bnfpo,
+       END OF t_t_ekpo.
+
+DATA: t_ekpo    TYPE t_t_ekpo  OCCURS 1000.
+DATA: l_ekpo    TYPE t_t_ekpo.
+
+* Tabelle zur Ausgabe der abh. PM-Aufträge
+TYPES: BEGIN OF t_t_pm,
+        objnr     TYPE cobrb-objnr,
+        ktext     TYPE aufk-ktext,
+        user4     TYPE caufvd-user4,
+        perbz     TYPE cobrb-perbz,
+        prozs     TYPE cobrb-prozs,
+        aufnr     TYPE aufk-aufnr,
+       END OF t_t_pm.
+
+DATA: t_pm     TYPE TABLE OF t_t_pm.
+
+DATA: t_bseg    TYPE bseg OCCURS 5.
+DATA: l_bseg    TYPE bseg.
+
+DATA: t_bkpf    TYPE bkpf OCCURS 1.
+DATA: l_bkpf    TYPE bkpf.
+
+DATA: l_rbkp    TYPE rbkp.
+* Selektionsparameter
+PARAMETERS:  p_ktopl      TYPE skat-ktopl OBLIGATORY MEMORY ID rkp.
+
+PARAMETERS:  p_server     TYPE c RADIOBUTTON GROUP exp.
+PARAMETERS:  p_path(30)   DEFAULT '/projekte/er/mm/' LOWER CASE.
+
+PARAMETERS:  p_local      TYPE c RADIOBUTTON GROUP exp.
+PARAMETERS:  p_online     TYPE string.
+
+* Eingabehilfen
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_online.
+  PERFORM get_online_filename USING p_online.
+
+INITIALIZATION.
+  source = database.
+
+* Exporttabelle aufbauen
+  l_export-tabname = 'T_AUFK'.
+  l_export-filename = 't_aufk.dat'.
+  APPEND l_export TO t_export.
+  l_export-filename = 't_rpsco1.dat'.
+  l_export-tabname = 'T_RPSCO1'.
+  APPEND l_export TO t_export.
+  l_export-filename = 't_pgkonto.dat'.
+  l_export-tabname = 'T_PGKONTO'.
+  APPEND l_export TO t_export.
+  l_export-filename = 't_data.dat'.
+  l_export-tabname = 'T_DATA'.
+  APPEND l_export TO t_export.
+  l_export-filename = 't_bpja1.dat'.
+  l_export-tabname = 'T_BPJA1'.
+  APPEND l_export TO t_export.
+  l_export-filename = 't_cosp1.dat'.
+  l_export-tabname = 'T_COSP1'.
+  APPEND l_export TO t_export.
+  l_export-filename = 't_pernr.dat'.
+  l_export-tabname = 'T_PERNR'.
+  APPEND l_export TO t_export.
+  l_export-filename = 't_ekpo.dat'.
+  l_export-tabname = 'T_EKPO'.
+  APPEND l_export TO t_export.
+  l_export-filename = 't_pm.dat'.
+  l_export-tabname = 'T_PM'.
+  APPEND l_export TO t_export.
+
+  IF sy-batch NE 'X'.
+    CREATE OBJECT zc_gui.
+    CALL METHOD zc_gui->get_sapgui_workdir
+      CHANGING
+        sapworkdir = p_online.
+  ENDIF.
+
+START-OF-SELECTION.
+* Zugriffe auf die logische Datenbank
+
+* Auftragsstammdaten ermitteln
+GET aufk.
+  CHECK aufk-loekz NE 'X'.
+  APPEND aufk TO t_aufk.
+
+GET cosp1 LATE.
+* Planwerte, wenn keine Verdichtung exisitiert
+  CLEAR l_cosp1.
+  CHECK cosp1-vrgng = 'RKP1' OR cosp1-vrgng = 'KSTP'.
+*  CHECK cosp1-versn = 0.
+
+  MOVE-CORRESPONDING cosp1 TO l_cosp1.
+
+  ADD cosp1-wkg001 THEN cosp1-wkg002 UNTIL cosp1-wkg016
+                                           TO l_cosp1-wert.
+
+  COLLECT l_cosp1 INTO t_cosp1.
+
+GET bpja1 LATE.
+  CHECK bpja1-vorga = 'KSTP'.
+*  CHECK bpja1-versn = 0.
+
+  CLEAR l_bpja1.
+
+  MOVE-CORRESPONDING bpja1 TO l_bpja1.
+
+  l_bpja1-wert = bpja1-wtjhr.
+
+  COLLECT l_bpja1 INTO t_bpja1.
+
+* Planwerte zum Auftrag ermitteln
+GET rpsco1 LATE.
+  CLEAR l_rpsco1.
+*  CHECK rpsco1-versn = 0.    " nur Planversion 0
+
+*  check rpsco1-vorga = 'RKP1'.  " nur Kostenplanung
+  MOVE-CORRESPONDING rpsco1 TO l_rpsco1.
+  ADD rpsco1-wlp00 THEN rpsco1-wlp01 UNTIL rpsco1-wlp16
+                                           TO l_rpsco1-wert.
+
+  COLLECT l_rpsco1 INTO t_rpsco1.
+
+* CO-Objekt: Einzelposten periodenbezogen und Belegk
+GET covp11 LATE.
+  CHECK covp11-wkgbtr NE 0.
+  CHECK covp11-gkoar  NE 'A'.    " keine Abrechnungen
+
+  CLEAR l_data.
+  MOVE-CORRESPONDING aufk TO l_data.
+
+* Bestellinfos werden korrekt übergeben
+  MOVE-CORRESPONDING covp11 TO l_data.
+  l_data-coist = covp11-wkgbtr.
+
+  PERFORM get_text USING l_data-gkoar l_data-gkont
+                   CHANGING l_data-gktxt.
+
+  COLLECT l_data INTO t_data.
+
+* Obligo pro Bestellung/BANF
+GET covo1 LATE.
+* Texte sichern BANF/Bestellung
+  MOVE-CORRESPONDING covo1 TO l_ekpo.
+  COLLECT l_ekpo INTO t_ekpo.
+
+* alle Obligos ausgeben wg. Bezeichnungen
+*  check covo1-wkgbtr ne 0.
+
+  CLEAR l_data.
+  MOVE-CORRESPONDING aufk TO l_data.
+
+* nicht per move-Corresponding zuweisbar
+  l_data-ebeln = covo1-refbn.
+  l_data-ebelp = covo1-rfpos.
+
+  MOVE-CORRESPONDING covo1 TO l_data.
+  l_data-coobl  = covo1-wkgbtr.
+  l_data-gkont  = covo1-lifnr.           " Lieferant
+  IF NOT covo1-lifnr IS INITIAL.
+    l_data-gkoar  = 'K'.
+  ELSE.
+    l_data-gkoar  = ' '.
+  ENDIF.
+  l_data-kstar  = covo1-sakto.
+
+  PERFORM get_text USING l_data-gkoar l_data-gkont
+                   CHANGING l_data-gktxt.
+
+  COLLECT l_data INTO t_data.
+
+* EV: Umbuchung Leistungsverrechnung
+GET covp12 LATE.
+  CHECK covp12-wkgbtr NE 0.
+  CLEAR l_data.
+  MOVE-CORRESPONDING aufk TO l_data.
+  MOVE-CORRESPONDING covp12 TO l_data.
+  l_data-coist = covp12-wkgbtr.
+
+  PERFORM get_text USING l_data-gkoar l_data-gkont
+                   CHANGING l_data-gktxt.
+
+  l_data-sgtxt = covp12-sgtxt.
+  COLLECT l_data INTO t_data.
+* ILV: ermitteln
+  IF covp12-vrgng = 'RKL' AND
+  covp12-pernr NE 0.
+    CLEAR l_pernr.
+    MOVE-CORRESPONDING covp12 TO l_pernr.
+    COLLECT l_pernr INTO t_pernr.
+  ENDIF.
+
+END-OF-SELECTION.
+* Namen bei CATS ergänzen
+  LOOP AT t_pernr INTO l_pernr.
+    CALL FUNCTION 'CATS_PERNR_NAME'
+      EXPORTING
+        beg  = sy-datum
+        pnr  = l_pernr-pernr
+      IMPORTING
+        name = l_pernr-name.
+    MODIFY t_pernr FROM l_pernr.
+  ENDLOOP.
+
+* PM-Infos ermitteln
+  SELECT ak~objnr ak~ktext ak~user4 cb~perbz cb~prozs cb~aufnr FROM cobrb
+    AS cb JOIN aufk AS ak ON cb~objnr = ak~objnr INTO TABLE t_pm
+    FOR ALL ENTRIES IN t_aufk WHERE cb~aufnr = t_aufk-aufnr AND
+                                    cb~konty = 'OR'.
+
+* Texte ergänzen
+  LOOP AT t_data INTO l_data.
+* einfache Textergänzung
+    IF l_data-sgtxt IS INITIAL AND
+      NOT l_data-ebeln IS INITIAL.
+      READ TABLE t_ekpo WITH KEY refbn = l_data-ebeln
+                                 rfpos = l_data-ebelp
+                              INTO l_ekpo.
+      l_data-sgtxt = l_ekpo-sgtxt.
+    ENDIF.
+* Textergänzung aus Belegkopf (XBLNR)
+    CASE l_data-awtyp.
+      WHEN 'BKPF'.             " normaler FI-Beleg
+        CALL FUNCTION 'FI_DOCUMENT_READ'
+          EXPORTING
+            i_bukrs = l_data-aworg+0(4)
+            i_belnr = l_data-refbn
+            i_gjahr = l_data-refgj
+          TABLES
+            t_bkpf  = t_bkpf
+            t_bseg  = t_bseg
+          EXCEPTIONS
+            OTHERS  = 1.
+
+        READ TABLE t_bkpf INDEX 1 INTO l_bkpf.
+        l_data-xblnr   = l_bkpf-xblnr.
+
+        LOOP AT t_bseg INTO l_bseg.
+          CASE l_data-gkoar.
+            WHEN 'K'.
+              CHECK l_bseg-lifnr = l_data-gkont.
+              EXIT.
+            WHEN 'D'.
+              CHECK l_bseg-kunnr = l_data-gkont.
+              EXIT.
+            WHEN 'S'.
+              CHECK l_bseg-hkont = l_data-gkont.
+              EXIT.
+          ENDCASE.
+        ENDLOOP.
+        l_data-fisgt   = l_bseg-sgtxt.
+
+      WHEN 'RMRP'.             " LogRePrü-Beleg
+        CALL FUNCTION 'MR_INVOICE_DOCUMENT_READ'
+          EXPORTING
+            i_belnr = l_data-refbn
+            i_gjahr = l_data-refgj
+          IMPORTING
+            e_rbkp  = l_rbkp
+          EXCEPTIONS
+            OTHERS  = 1.
+
+        l_data-xblnr   = l_rbkp-xblnr.
+        l_data-fisgt   = l_rbkp-sgtxt.
+    ENDCASE.
+
+    REPLACE ALL OCCURRENCES OF ';' IN l_data-fisgt WITH '~'.
+    REPLACE ALL OCCURRENCES OF ';' IN l_data-sgtxt WITH '~'.
+    REPLACE ALL OCCURRENCES OF ';' IN l_data-bltxt WITH '~'.
+
+    MODIFY t_data FROM l_data.
+
+  ENDLOOP.
+
+* Jetzt noch die Banf/Banfpos zu den EK-Belegen ermitteln
+  LOOP AT t_ekpo INTO l_ekpo.
+    SELECT SINGLE banfn bnfpo INTO CORRESPONDING FIELDS OF l_ekpo FROM eban WHERE ebeln EQ l_ekpo-refbn AND
+                                                                                  ebelp EQ l_ekpo-rfpos.
+    MODIFY t_ekpo FROM l_ekpo.
+  ENDLOOP.
+* alle Texte von Semikolons befreien (leider nicht UC-kompatibel)
+*  REPLACE ALL OCCURRENCES OF ';' IN TABLE t_data WITH '~'.
+*  REPLACE ALL OCCURRENCES OF ';' IN TABLE t_pernr WITH '~'.
+*  REPLACE ALL OCCURRENCES OF ';' IN TABLE t_pgkonto WITH '~'.
+
+  IF p_local = 'X' AND sy-batch NE 'X'.    " natürlich nicht im Hintergrund
+    PERFORM data_download.
+  ELSE.
+    PERFORM data_server.
+  ENDIF.
+
+*&---------------------------------------------------------------------*
+*&      Form  get_text
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_L_DATA_GKOAR  text
+*      -->P_L_DATA_GKONT  text
+*      <--P_L_DATA_GKTXT  text
+*----------------------------------------------------------------------*
+FORM get_text USING    p_gkoar TYPE covp11-gkoar
+                       p_gkont TYPE covp11-gkont
+              CHANGING p_gktxt TYPE lfa1-name1.
+**                       p_sortl type lfa1-sortl.
+
+  TABLES: lfa1, skat, csku.
+
+  CLEAR l_gkonto.
+  l_gkonto-gkoar = p_gkoar.
+  l_gkonto-gkont = p_gkont.
+
+* erstmal lokale Tabelle durchsuchen..
+  READ TABLE t_gkonto WITH KEY gkont = p_gkont gkoar = p_gkoar
+                      INTO l_gkonto.
+
+  IF sy-subrc NE 0.
+* nichts gefunden, dann neu suchen
+    CASE p_gkoar.
+      WHEN 'K'.
+        SELECT SINGLE name1 sortl pstlz ort01 stras telf1 telfx INTO
+        (l_gkonto-gktxt, l_gkonto-sortl, l_gkonto-pstlz, l_gkonto-ort01,
+            l_gkonto-stras, l_gkonto-telf1, l_gkonto-telfx)
+                                   FROM lfa1 WHERE lifnr = p_gkont.
+
+
+      WHEN 'S' OR 'A' OR 'M'.
+        SELECT SINGLE txt20 INTO (l_gkonto-gktxt)
+                                  FROM skat WHERE saknr = p_gkont AND
+                                                  ktopl = p_ktopl AND
+                                                  spras = 'D'.
+      WHEN 'C'.
+* selbsdefiniert für CO-Kostenart
+        SELECT SINGLE ktext INTO (l_gkonto-gktxt)
+                                  FROM csku WHERE kstar = p_gkont AND
+                                                  ktopl = p_ktopl AND
+                                                  spras = 'D'.
+    ENDCASE.
+
+    REPLACE ALL OCCURRENCES OF ';' IN l_gkonto-gktxt WITH '~'.
+
+    COLLECT l_gkonto INTO t_gkonto.
+  ENDIF.
+
+  MOVE-CORRESPONDING l_gkonto TO l_pgkonto.
+
+  COLLECT l_pgkonto INTO t_pgkonto.
+
+  p_gktxt = l_gkonto-gktxt.
+
+ENDFORM.                    " get_text
+*&---------------------------------------------------------------------*
+*&      Form  DATA_DOWNLOAD
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_download .
+  DATA: file   TYPE string.
+
+  LOOP AT t_export INTO l_export.
+    ASSIGN (l_export-tabname) TO <it>.
+
+    IF NOT p_online IS INITIAL.
+      CONCATENATE p_online '\' l_export-filename INTO file.
+    ENDIF.
+
+    CALL METHOD zc_gui->gui_download
+      EXPORTING
+        filetype = 'DAT'
+        filename = file
+      CHANGING
+        data_tab = <it>.
+  ENDLOOP.
+ENDFORM.                    " DATA_DOWNLOAD
+*&---------------------------------------------------------------------*
+*&      Form  data_download
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_server.
+
+  LOOP AT t_export INTO l_export.
+    ASSIGN (l_export-tabname) TO <it>.
+    PERFORM table_download USING l_export-filename.
+  ENDLOOP.
+
+ENDFORM.                    " data_upload
+*&---------------------------------------------------------------------*
+*&      Form  table_download
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM table_download USING dsn   TYPE string.
+
+  DATA:      t_tab             TYPE truxs_t_text_data.
+  DATA:      l_tab(4096)       TYPE c.
+
+  DATA: descr_ref TYPE REF TO cl_abap_structdescr.
+  DATA: zc_conv   TYPE REF TO cl_rsda_csv_converter.
+
+  FIELD-SYMBOLS:
+  <comp_wa> TYPE abap_compdescr.
+
+  CONCATENATE p_path dsn INTO dsn.
+
+  OPEN DATASET dsn FOR OUTPUT IN TEXT MODE ENCODING
+                          NON-UNICODE WITH WINDOWS LINEFEED.
+
+  zc_conv = cl_rsda_csv_converter=>create(
+                                       i_delimiter = ''
+                                       i_separator = ';' ).
+  LOOP AT <it> ASSIGNING <il>.
+    AT FIRST.
+* Zunächst Spaltenbeschreibung exportieren
+      descr_ref ?= cl_abap_typedescr=>describe_by_data( <il> ).
+      TRANSFER 'STRUCTURE' TO dsn.
+      LOOP AT descr_ref->components ASSIGNING <comp_wa>.
+        CALL METHOD zc_conv->structure_to_csv
+          EXPORTING
+            i_s_data = <comp_wa>
+          IMPORTING
+            e_data   = l_tab.
+        REPLACE ALL OCCURRENCES OF '" "' IN l_tab WITH ''.
+        TRANSFER l_tab TO dsn.
+      ENDLOOP.
+
+      TRANSFER 'STANDARDS' TO dsn.
+      CALL METHOD zc_conv->structure_to_csv
+        EXPORTING
+          i_s_data = c_standards
+        IMPORTING
+          e_data   = l_tab.
+      TRANSFER l_tab TO dsn.
+
+      TRANSFER 'DATA' TO dsn.
+    ENDAT.
+* dann die Daten
+    CALL METHOD zc_conv->structure_to_csv
+      EXPORTING
+        i_s_data = <il>
+      IMPORTING
+        e_data   = l_tab.
+    REPLACE ALL OCCURRENCES OF '" "' IN l_tab WITH ''.
+    TRANSFER l_tab TO dsn.
+  ENDLOOP.
+
+  FREE zc_conv.
+  CLOSE DATASET dsn.
+
+ENDFORM.                    " table_download
+*&---------------------------------------------------------------------*
+*&      Form  GET_ONLINE_FILENAME
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_P_ONLINE  text
+*----------------------------------------------------------------------*
+FORM get_online_filename  USING    p_p_online.
+
+  CALL METHOD zc_gui->directory_browse
+    CHANGING
+      selected_folder = p_p_online.
+
+ENDFORM.                    " GET_ONLINE_FILENAME

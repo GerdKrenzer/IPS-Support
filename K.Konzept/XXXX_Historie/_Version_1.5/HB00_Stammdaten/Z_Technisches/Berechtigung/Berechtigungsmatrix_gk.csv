@@ -1,0 +1,16 @@
+PRJ_ID;PRJ_Vorgang;PRJ_Kuerzel;MA;PRI;BAU;PRV;PRS;PRL;KOO;ABS;AL;GF;RES1;RES2;RES3
+;;;20;25;30;40;45;50;60;65;70;80;0;0;0
+1;Projekt kopieren;PRJ_KOPIEREN;;;;;;;;;1;;;;
+2;Projekt löschen;PRJ_LOESCHEN;;;;;;;;;1;;;;
+3;Stammdaten ändern/ergänzen;PRJ_STAMM;;;;1;;1;;;1;;;;
+4;Projekt-Basisdaten (Status) ändern;PRJ_BASIS;;;;;;;;;1;;;;
+5;Externe Projektbeteiligte hinzufügen und ändern;PRJ_BETEILIGTE;;;;1;;1;;;1;;;;
+6;Memotext ändern;PRJ_MEMO;;;;;;;;;1;;;;
+7;Vereinbarung hinzufügen, ändern und löschen;PRJ_VEREINBARUNG;;;;;;;;;1;;;;
+8;Projektablauf hinzufügen, ändern und löschen;PRJ_ABLAUF;;;;1;;1;;;;;;;
+9;Gesamtliste aus Vereinbarung und Ablauf ausdrucken;PRJ_LISTE;;;;1;;1;;1;1;;;;
+10;Stichtag Ändern;PRJ_STICHTAG;;;;;;;;;1;;;;
+11;Neuen Benutzer anlegen, ändern und löschen;RES_MITARB;;;;;;;;;1;;;;
+12;Mitarbeiter zu Projekt zuweisen, ändern und abtrennen;RES_PRJZUORDNUNG;;;;;;;;;1;;;;
+13;Sollstunde pro Projekt eingeben, ändern und löschen;RES_SOLLSTUNDEN;;;;;;;;;1;;;;
+14;Iststunden auf zugeordnete Projekte eintragen und ausdrucken;RES_ISTSTUNDEN;1;;;;;;;;1;;;;
